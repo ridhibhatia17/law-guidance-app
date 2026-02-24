@@ -35,7 +35,7 @@ A full-stack web application that provides legal guidance and contract analysis 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Yashwatts/law-guidance-app.git
+git clone https://github.com/ridhibhatia17/law-guidance-app
 cd law-guidance-app
 ```
 
