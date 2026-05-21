@@ -31,28 +31,42 @@ const GuidanceOutput = ({ analysisResult, caseTypeResult, activeTab }) => {
     <div className="space-y-6">
       <div className="card fade-in">
         <div className="flex items-center space-x-3 mb-4">
-          {analysisResult.isBreach ? (
+          {analysisResult.aiAvailable === false ? (
+            <AlertCircle className="h-6 w-6 text-saffron" />
+          ) : analysisResult.isBreach ? (
             <CheckCircle className="h-6 w-6 text-error-red" />
           ) : (
             <AlertCircle className="h-6 w-6 text-saffron" />
           )}
           <h3 className="text-xl font-bold text-text-primary">
-            {analysisResult.isBreach ? 'It’s Likely a Contract Problem' : 'Not Sure If It’s a Contract Problem'}
+            {analysisResult.aiAvailable === false
+              ? 'AI Couldn’t Analyze This Right Now'
+              : analysisResult.isBreach
+                ? 'It’s Likely a Contract Problem'
+                : 'Not Sure If It’s a Contract Problem'}
           </h3>
         </div>
         
         <p className="text-text-secondary text-sm leading-relaxed">{analysisResult.explanation}</p>
         
         <div className="bg-card-bg rounded-lg p-4 mt-4 border border-gray-200">
-          <p className="text-xs font-medium text-text-secondary mb-2">
-            How Sure We Are: {Math.round(analysisResult.confidence * 100)}%
-          </p>
-          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-            <div 
-              className="bg-saffron h-3 rounded-full transition-all duration-500" 
-              style={{ width: `${analysisResult.confidence * 100}%` }}
-            ></div>
-          </div>
+          {analysisResult.confidence === null ? (
+            <p className="text-xs font-medium text-text-secondary">
+              Confidence: unavailable while the AI service is offline.
+            </p>
+          ) : (
+            <>
+              <p className="text-xs font-medium text-text-secondary mb-2">
+                How Sure We Are: {Math.round(analysisResult.confidence * 100)}%
+              </p>
+              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div 
+                  className="bg-saffron h-3 rounded-full transition-all duration-500" 
+                  style={{ width: `${analysisResult.confidence * 100}%` }}
+                ></div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -99,19 +113,28 @@ const GuidanceOutput = ({ analysisResult, caseTypeResult, activeTab }) => {
       <div className="card fade-in">
         <h3 className="text-xl font-bold text-text-primary mb-4">Possible Case Types</h3>
         <p className="text-text-secondary text-sm leading-relaxed mb-4">{caseTypeResult.generalAdvice}</p>
+        {caseTypeResult.aiAvailable === false && (
+          <div className="mb-4 rounded-lg border border-saffron/20 bg-saffron/10 p-3 text-sm text-text-secondary">
+            AI is unavailable right now, so these are fallback suggestions rather than a live analysis.
+          </div>
+        )}
         
-        <div className="flex items-center space-x-3 mb-4">
-          <TrendingUp className="h-5 w-5 text-green" />
-          <span className="text-sm text-text-secondary">
-            Chance of Winning: {Math.round(caseTypeResult.estimatedSuccess * 100)}%
-          </span>
-        </div>
-        <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden mb-4">
-          <div 
-            className="bg-green h-3 rounded-full transition-all duration-500" 
-            style={{ width: `${caseTypeResult.estimatedSuccess * 100}%` }}
-          ></div>
-        </div>
+        {caseTypeResult.estimatedSuccess !== null && (
+          <>
+            <div className="flex items-center space-x-3 mb-4">
+              <TrendingUp className="h-5 w-5 text-green" />
+              <span className="text-sm text-text-secondary">
+                Chance of Winning: {Math.round(caseTypeResult.estimatedSuccess * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden mb-4">
+              <div 
+                className="bg-green h-3 rounded-full transition-all duration-500" 
+                style={{ width: `${caseTypeResult.estimatedSuccess * 100}%` }}
+              ></div>
+            </div>
+          </>
+        )}
       </div>
 
       {caseTypeResult.recommendedCases.map((caseType, index) => (

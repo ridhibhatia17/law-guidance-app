@@ -1,10 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = `${process.env.REACT_APP_API_URL}/api`; // Append /api to baseURL
+const rawApiUrl = (process.env.REACT_APP_API_URL || '').trim();
+const normalizedApiUrl = rawApiUrl.replace(/\/+$/, '');
+const API_BASE_URL = !normalizedApiUrl
+  ? '/api'
+  : normalizedApiUrl.endsWith('/api')
+    ? normalizedApiUrl
+    : `${normalizedApiUrl}/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,7 +33,9 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    const message = error.response?.data?.error || error.message || 'An unexpected error occurred. Please try again.';
+    const message = error.code === 'ECONNABORTED'
+      ? 'The request is taking longer than expected. Please try again in a moment.'
+      : error.response?.data?.error || error.message || 'An unexpected error occurred. Please try again.';
     console.error('API Error:', message, error.response?.status); // Log status for debugging
     return Promise.reject({ message, status: error.response?.status });
   }

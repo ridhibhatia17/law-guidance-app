@@ -4,11 +4,14 @@ const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const winston = require('winston');
+const path = require('path');
 require('dotenv').config();
 
 const legalRoutes = require('./routes/legal');
 
 const app = express();
+// If running behind a proxy (e.g., Vercel or nginx) enable trust proxy
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 5000;
 
 // Logger setup
@@ -34,11 +37,10 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // CORS configuration
-app.use(cors({
-  origin: ['https://law-guidance-app-frontend.vercel.app'], // Replace with your actual Vercel frontend URL
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+if (process.env.NODE_ENV !== 'production') {
+  // In development allow requests from any origin to simplify local testing.
+  app.use(cors({ origin: true, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+}
 
 // Middleware
 app.use(helmet());
@@ -53,6 +55,20 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api', legalRoutes);
+
+// Serve the frontend build from the same App Service in production.
+if (process.env.NODE_ENV === 'production') {
+  const frontendBuildPath = path.join(__dirname, 'public');
+  app.use(express.static(frontendBuildPath));
+
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+
+    return res.sendFile(path.join(frontendBuildPath, 'index.html'));
+  });
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {

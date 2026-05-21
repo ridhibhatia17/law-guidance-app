@@ -1,0 +1,6 @@
+name: law-guidance-app
+services:
+  backend:
+    project: ./backend
+    host: appservice
+    language: js
