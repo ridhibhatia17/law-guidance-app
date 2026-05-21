@@ -38,6 +38,12 @@ Frontend (Vercel)
 4. Vercel will detect Create React App. Build command: `npm run build`, Output directory: `build`.
 5. Deploy and wait for frontend URL (e.g., https://law-help-frontend.vercel.app).
 
+Linking to your deployed backend
+- If your backend is deployed at `https://law-guidance-app.onrender.com`, set the following Environment Variable in Vercel (Project Settings → Environment Variables):
+   - `REACT_APP_API_URL` = https://law-guidance-app.onrender.com
+
+You can also add a production env file in the repo at `frontend/.env.production` with the same value so local builds mimic production. (This repo includes that file pointing at your Render deployment.)
+
 Local testing (before or after deploy)
 - Start backend locally:
 
